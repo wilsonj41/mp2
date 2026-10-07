@@ -32,6 +32,19 @@ function formatRuntime(runtime: number | null): string {
   return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
 }
 
+function formatLanguageName(languageCode: string): string {
+  if (!languageCode) {
+    return 'Unknown'
+  }
+
+  try {
+    const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
+    return languageNames.of(languageCode) ?? languageCode.toUpperCase()
+  } catch {
+    return languageCode.toUpperCase()
+  }
+}
+
 function MovieDetailsPage() {
   const { movieId } = useParams()
   const numericMovieId = Number(movieId)
@@ -201,8 +214,8 @@ function MovieDetailsPage() {
               <dt className="text-xs font-bold uppercase tracking-wider text-zinc-500">
                 Original language
               </dt>
-              <dd className="mt-2 uppercase text-zinc-200">
-                {movie.original_language}
+              <dd className="mt-2 text-zinc-200">
+                {formatLanguageName(movie.original_language)}
               </dd>
             </div>
             <div>
