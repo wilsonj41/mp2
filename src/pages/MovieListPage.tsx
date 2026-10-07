@@ -1,0 +1,195 @@
+import { useEffect, useMemo, useState } from 'react'
+import {
+  getApiErrorMessage,
+  getPopularMovies,
+  isCanceledRequest,
+  searchMovies,
+} from '../api/tmdb'
+import ErrorMessage from '../components/ErrorMessage'
+import LoadingState from '../components/LoadingState'
+import MovieListItem from '../components/MovieListItem'
+import type { MovieSummary } from '../types/tmdb'
+import { saveMovieNavigation } from '../utils/movieNavigation'
+
+type SortField = 'title' | 'release_date' | 'vote_average' | 'popularity'
+type SortDirection = 'asc' | 'desc'
+
+function compareMovies(
+  firstMovie: MovieSummary,
+  secondMovie: MovieSummary,
+  sortField: SortField,
+): number {
+  if (sortField === 'title') {
+    return firstMovie.title.localeCompare(secondMovie.title)
+  }
+
+  if (sortField === 'release_date') {
+    return firstMovie.release_date.localeCompare(secondMovie.release_date)
+  }
+
+  return firstMovie[sortField] - secondMovie[sortField]
+}
+
+function MovieListPage() {
+  const [movies, setMovies] = useState<MovieSummary[]>([])
+  const [query, setQuery] = useState('')
+  const [sortField, setSortField] = useState<SortField>('popularity')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const controller = new AbortController()
+    const trimmedQuery = query.trim()
+
+    const timer = window.setTimeout(
+      async () => {
+        setIsLoading(true)
+        setError('')
+
+        try {
+          const results = trimmedQuery
+            ? await searchMovies(trimmedQuery, controller.signal)
+            : await getPopularMovies(controller.signal)
+
+          setMovies(results)
+        } catch (requestError) {
+          if (!isCanceledRequest(requestError)) {
+            setError(getApiErrorMessage(requestError))
+            setMovies([])
+          }
+        } finally {
+          if (!controller.signal.aborted) {
+            setIsLoading(false)
+          }
+        }
+      },
+      trimmedQuery ? 350 : 0,
+    )
+
+    return () => {
+      window.clearTimeout(timer)
+      controller.abort()
+    }
+  }, [query])
+
+  const sortedMovies = useMemo(() => {
+    const directionMultiplier = sortDirection === 'asc' ? 1 : -1
+
+    return [...movies].sort(
+      (firstMovie, secondMovie) =>
+        compareMovies(firstMovie, secondMovie, sortField) *
+        directionMultiplier,
+    )
+  }, [movies, sortDirection, sortField])
+
+  useEffect(() => {
+    if (sortedMovies.length > 0) {
+      saveMovieNavigation(
+        sortedMovies.map((movie) => movie.id),
+        '/',
+        'Movie List',
+      )
+    }
+  }, [sortedMovies])
+
+  return (
+    <section className="mx-auto w-[1120px] py-10">
+      <div className="mb-8 flex items-end justify-between">
+        <div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-amber-400">
+            Browse the catalog
+          </p>
+          <h1 className="text-4xl font-black tracking-tight text-white">
+            Find your next movie
+          </h1>
+          <p className="mt-3 text-zinc-400">
+            Search TMDB and sort the results your way.
+          </p>
+        </div>
+        {!isLoading && !error && (
+          <p className="text-sm text-zinc-500">
+            {sortedMovies.length}{' '}
+            {sortedMovies.length === 1 ? 'movie' : 'movies'}
+          </p>
+        )}
+      </div>
+
+      <div className="mb-6 grid grid-cols-[1fr_220px_180px] gap-4 rounded-xl border border-white/10 bg-[#151820] p-5">
+        <label className="block">
+          <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            Search by title
+          </span>
+          <input
+            className="h-11 w-full rounded-md border border-white/10 bg-[#0d0f14] px-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-amber-400"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Try The Godfather…"
+            type="search"
+            value={query}
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            Sort by
+          </span>
+          <select
+            className="h-11 w-full rounded-md border border-white/10 bg-[#0d0f14] px-3 text-sm text-white outline-none focus:border-amber-400"
+            onChange={(event) => setSortField(event.target.value as SortField)}
+            value={sortField}
+          >
+            <option value="title">Title</option>
+            <option value="release_date">Release date</option>
+            <option value="vote_average">Rating</option>
+            <option value="popularity">Popularity</option>
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            Order
+          </span>
+          <select
+            className="h-11 w-full rounded-md border border-white/10 bg-[#0d0f14] px-3 text-sm text-white outline-none focus:border-amber-400"
+            onChange={(event) =>
+              setSortDirection(event.target.value as SortDirection)
+            }
+            value={sortDirection}
+          >
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </label>
+      </div>
+
+      {error && <ErrorMessage message={error} />}
+      {isLoading && <LoadingState message="Loading the movie list…" />}
+
+      {!isLoading && !error && sortedMovies.length === 0 && (
+        <div className="rounded-xl border border-dashed border-white/15 py-20 text-center">
+          <h2 className="text-lg font-semibold text-white">No movies found</h2>
+          <p className="mt-2 text-sm text-zinc-500">
+            Try a different title in the search field.
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !error && sortedMovies.length > 0 && (
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-[#12151b]">
+          <div className="grid grid-cols-[72px_1fr_120px_110px] gap-5 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
+            <span>Poster</span>
+            <span>Movie</span>
+            <span>Released</span>
+            <span>Rating</span>
+          </div>
+          {sortedMovies.map((movie) => (
+            <MovieListItem key={movie.id} movie={movie} />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+export default MovieListPage
+
