@@ -10,8 +10,8 @@ const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
 
 function AppHeader() {
   return (
-    <header className="border-b border-white/10 bg-[#101218]">
-      <div className="mx-auto flex w-[1120px] items-center justify-between">
+    <header className="border-b border-white/10 bg-header">
+      <div className="mx-auto flex w-280 items-center justify-between">
         <Link className="flex items-center gap-3 text-white" to="/">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-400 text-lg font-black text-zinc-950">
             M
@@ -33,4 +33,3 @@ function AppHeader() {
 }
 
 export default AppHeader
-

@@ -10,12 +10,12 @@ interface MovieCardProps {
 function MovieCard({ movie }: MovieCardProps) {
   return (
     <Link
-      className="group overflow-hidden rounded-lg border border-white/10 bg-[#151820] shadow-lg shadow-black/20 transition-colors hover:border-amber-400/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+      className="group overflow-hidden rounded-lg border border-white/10 bg-panel shadow-lg shadow-black/20 transition-colors hover:border-amber-400/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
       to={`/movies/${movie.id}`}
     >
       <PosterImage
         alt={`${movie.title} poster`}
-        className="h-[330px] w-full object-cover"
+        className="h-82.5 w-full object-cover"
         src={getImageUrl(movie.poster_path, 'w500')}
       />
       <div className="p-4">
@@ -36,4 +36,3 @@ function MovieCard({ movie }: MovieCardProps) {
 }
 
 export default MovieCard
-

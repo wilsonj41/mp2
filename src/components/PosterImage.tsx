@@ -14,7 +14,7 @@ function PosterImage({ alt, className, src }: PosterImageProps) {
     return (
       <div
         aria-label={`${alt} poster unavailable`}
-        className={`${className} flex items-center justify-center overflow-hidden bg-zinc-800 px-1 text-center text-[10px] leading-tight text-zinc-500`}
+        className={`${className} flex items-center justify-center overflow-hidden bg-zinc-800 px-1 text-center text-2xs leading-tight text-zinc-500`}
         role="img"
       >
         No poster

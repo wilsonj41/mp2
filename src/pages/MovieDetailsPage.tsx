@@ -109,7 +109,7 @@ function MovieDetailsPage() {
 
   if (!isValidMovieId) {
     return (
-      <section className="mx-auto w-[1120px] py-16">
+      <section className="mx-auto w-280 py-16">
         <ErrorMessage message="This movie URL is not valid." />
         <Link
           className="mt-6 inline-block text-sm font-semibold text-amber-300 hover:text-amber-200"
@@ -127,7 +127,7 @@ function MovieDetailsPage() {
 
   if (error || !movie) {
     return (
-      <section className="mx-auto w-[1120px] py-16">
+      <section className="mx-auto w-280 py-16">
         <ErrorMessage message={error || 'Movie details are unavailable.'} />
         <Link
           className="mt-6 inline-block text-sm font-semibold text-amber-300 hover:text-amber-200"
@@ -143,7 +143,7 @@ function MovieDetailsPage() {
 
   return (
     <article>
-      <div className="relative h-[360px] overflow-hidden bg-zinc-900">
+      <div className="relative h-90 overflow-hidden bg-zinc-900">
         {backdropUrl && (
           <img
             alt=""
@@ -151,18 +151,18 @@ function MovieDetailsPage() {
             src={backdropUrl}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0d12] via-[#0b0d12]/40 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-canvas via-canvas/40 to-transparent" />
       </div>
 
-      <div className="relative mx-auto -mt-52 grid w-[1120px] grid-cols-[260px_1fr] gap-10 pb-14">
+      <div className="movie-detail-grid relative mx-auto -mt-52 grid w-280 gap-10 pb-14">
         <PosterImage
           alt={`${movie.title} poster`}
-          className="h-[390px] w-[260px] rounded-xl object-cover shadow-2xl shadow-black/60"
+          className="h-97.5 w-65 rounded-xl object-cover shadow-2xl shadow-black/60"
           src={getImageUrl(movie.poster_path, 'w500')}
         />
 
         <div className="pt-16">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-amber-400">
+          <p className="mb-3 text-xs font-bold uppercase tracking-section text-amber-400">
             {movie.status}
           </p>
           <h1 className="text-5xl font-black tracking-tight text-white">
@@ -197,7 +197,7 @@ function MovieDetailsPage() {
             <div className="flex flex-wrap gap-2">
               {movie.genres.map((genre) => (
                 <span
-                  className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-zinc-300"
+                  className="rounded-full border border-white/10 bg-white/4 px-3 py-1 text-xs font-medium text-zinc-300"
                   key={genre.id}
                 >
                   {genre.name}
@@ -246,9 +246,9 @@ function MovieDetailsPage() {
 
       <nav
         aria-label="Movie detail navigation"
-        className="border-t border-white/10 bg-[#101218]"
+        className="border-t border-white/10 bg-header"
       >
-        <div className="mx-auto flex w-[1120px] items-center justify-between py-6">
+        <div className="mx-auto flex w-280 items-center justify-between py-6">
           <div className="w-48">
             {previousId && (
               <Link

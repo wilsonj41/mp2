@@ -2,8 +2,8 @@ import { Link } from 'react-router'
 
 function NotFoundPage() {
   return (
-    <section className="mx-auto flex min-h-[600px] w-[1120px] flex-col items-center justify-center text-center">
-      <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-400">
+    <section className="mx-auto flex min-h-150 w-280 flex-col items-center justify-center text-center">
+      <p className="text-sm font-bold uppercase tracking-section text-amber-400">
         404
       </p>
       <h1 className="mt-3 text-5xl font-black tracking-tight text-white">
@@ -23,4 +23,3 @@ function NotFoundPage() {
 }
 
 export default NotFoundPage
-

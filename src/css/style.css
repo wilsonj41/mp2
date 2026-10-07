@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+@theme {
+  --color-canvas: #0b0d12;
+  --color-header: #101218;
+  --color-panel: #151820;
+  --color-field: #0d0f14;
+  --color-list: #12151b;
+  --tracking-section: 0.22em;
+  --text-2xs: 0.625rem;
+}
+
+@layer utilities {
+  .movie-row-grid {
+    grid-template-columns: 72px 1fr 120px 110px;
+  }
+
+  .search-controls-grid {
+    grid-template-columns: 1fr 220px 180px;
+  }
+
+  .movie-detail-grid {
+    grid-template-columns: 260px 1fr;
+  }
+}
+
 @layer base {
   :root {
     color: #f4f4f5;

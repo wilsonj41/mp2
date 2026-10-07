@@ -195,10 +195,10 @@ function MovieListPage() {
   }, [sortedMovies])
 
   return (
-    <section className="mx-auto w-[1120px] py-10">
+    <section className="mx-auto w-280 py-10">
       <div className="mb-8 flex items-end justify-between">
         <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-amber-400">
+          <p className="mb-2 text-xs font-bold uppercase tracking-section text-amber-400">
             Browse the catalog
           </p>
           <h1 className="text-4xl font-black tracking-tight text-white">
@@ -216,14 +216,14 @@ function MovieListPage() {
         )}
       </div>
 
-      <div className="mb-6 grid grid-cols-[1fr_220px_180px] gap-4 rounded-xl border border-white/10 bg-[#151820] p-5">
+      <div className="search-controls-grid mb-6 grid gap-4 rounded-xl border border-white/10 bg-panel p-5">
         <label className="block">
           <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-400">
             Search by title
           </span>
           <div className="relative">
             <input
-              className="h-11 w-full rounded-md border border-white/10 bg-[#0d0f14] px-4 pr-12 text-sm text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-amber-400"
+              className="h-11 w-full rounded-md border border-white/10 bg-field px-4 pr-12 text-sm text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-amber-400"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Try The Godfather…"
               type="search"
@@ -245,7 +245,7 @@ function MovieListPage() {
           </span>
           <div className="relative">
             <select
-              className="h-11 w-full appearance-none rounded-md border border-white/10 bg-[#0d0f14] px-3 pr-10 text-sm text-white outline-none focus:border-amber-400"
+              className="h-11 w-full appearance-none rounded-md border border-white/10 bg-field px-3 pr-10 text-sm text-white outline-none focus:border-amber-400"
               onChange={(event) =>
                 setSortField(event.target.value as SortField)
               }
@@ -266,7 +266,7 @@ function MovieListPage() {
           </span>
           <div className="relative">
             <select
-              className="h-11 w-full appearance-none rounded-md border border-white/10 bg-[#0d0f14] px-3 pr-10 text-sm text-white outline-none focus:border-amber-400"
+              className="h-11 w-full appearance-none rounded-md border border-white/10 bg-field px-3 pr-10 text-sm text-white outline-none focus:border-amber-400"
               onChange={(event) =>
                 setSortDirection(event.target.value as SortDirection)
               }
@@ -293,8 +293,8 @@ function MovieListPage() {
 
       {sortedMovies.length > 0 && (
         <>
-          <div className="overflow-hidden rounded-xl border border-white/10 bg-[#12151b]">
-            <div className="grid grid-cols-[72px_1fr_120px_110px] gap-5 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
+          <div className="overflow-hidden rounded-xl border border-white/10 bg-list">
+            <div className="movie-row-grid grid gap-5 border-b border-white/10 bg-white/3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
               <span>Poster</span>
               <span>Movie</span>
               <span>Released</span>

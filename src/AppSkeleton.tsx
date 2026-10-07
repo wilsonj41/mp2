@@ -4,7 +4,7 @@ import './css/style.css'
 
 function AppSkeleton() {
   return (
-    <div className="min-h-screen bg-[#0b0d12] text-zinc-100">
+    <div className="min-h-screen bg-canvas text-zinc-100">
       <AppHeader />
       <main>
         <Outlet />

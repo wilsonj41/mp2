@@ -14,7 +14,7 @@ function formatReleaseYear(releaseDate: string): string {
 function MovieListItem({ movie }: MovieListItemProps) {
   return (
     <Link
-      className="group grid grid-cols-[72px_1fr_120px_110px] items-center gap-5 border-b border-white/10 px-4 py-4 transition-colors hover:bg-white/[0.04] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+      className="movie-row-grid group grid items-center gap-5 border-b border-white/10 px-4 py-4 transition-colors hover:bg-white/4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
       to={`/movies/${movie.id}`}
     >
       <PosterImage
@@ -44,4 +44,3 @@ function MovieListItem({ movie }: MovieListItemProps) {
 }
 
 export default MovieListItem
-
