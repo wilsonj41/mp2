@@ -4,7 +4,6 @@ import type {
   GenreResponse,
   MovieDetails,
   MoviePageResponse,
-  MovieSummary,
 } from '../types/tmdb'
 
 const accessToken = import.meta.env.VITE_TMDB_READ_ACCESS_TOKEN
@@ -33,29 +32,35 @@ const commonMovieParams = {
 }
 
 export async function getPopularMovies(
+  page = 1,
   signal?: AbortSignal,
-): Promise<MovieSummary[]> {
+): Promise<MoviePageResponse> {
   const response = await tmdbApi.get<MoviePageResponse>('/movie/popular', {
-    params: commonMovieParams,
+    params: {
+      ...commonMovieParams,
+      page,
+    },
     signal,
   })
 
-  return response.data.results
+  return response.data
 }
 
 export async function searchMovies(
   query: string,
+  page = 1,
   signal?: AbortSignal,
-): Promise<MovieSummary[]> {
+): Promise<MoviePageResponse> {
   const response = await tmdbApi.get<MoviePageResponse>('/search/movie', {
     params: {
       ...commonMovieParams,
+      page,
       query,
     },
     signal,
   })
 
-  return response.data.results
+  return response.data
 }
 
 export async function getMovieGenres(signal?: AbortSignal): Promise<Genre[]> {
@@ -69,19 +74,21 @@ export async function getMovieGenres(signal?: AbortSignal): Promise<Genre[]> {
 
 export async function discoverMovies(
   genreIds: number[],
+  page = 1,
   signal?: AbortSignal,
-): Promise<MovieSummary[]> {
+): Promise<MoviePageResponse> {
   const response = await tmdbApi.get<MoviePageResponse>('/discover/movie', {
     params: {
       ...commonMovieParams,
       include_video: false,
+      page,
       sort_by: 'popularity.desc',
       with_genres: genreIds.length > 0 ? genreIds.join(',') : undefined,
     },
     signal,
   })
 
-  return response.data.results
+  return response.data
 }
 
 export async function getMovieDetails(
@@ -125,4 +132,3 @@ export function getApiErrorMessage(error: unknown): string {
 export function isCanceledRequest(error: unknown): boolean {
   return axios.isCancel(error)
 }
-

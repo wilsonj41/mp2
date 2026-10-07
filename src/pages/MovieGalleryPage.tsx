@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   discoverMovies,
   getApiErrorMessage,
@@ -9,6 +9,7 @@ import ErrorMessage from '../components/ErrorMessage'
 import LoadingState from '../components/LoadingState'
 import MovieCard from '../components/MovieCard'
 import type { Genre, MovieSummary } from '../types/tmdb'
+import { appendUniqueMovies } from '../utils/movies'
 import { saveMovieNavigation } from '../utils/movieNavigation'
 
 function MovieGalleryPage() {
@@ -16,7 +17,11 @@ function MovieGalleryPage() {
   const [selectedGenreIds, setSelectedGenreIds] = useState<number[]>([])
   const [movies, setMovies] = useState<MovieSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [error, setError] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const loadMoreController = useRef<AbortController | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -41,15 +46,20 @@ function MovieGalleryPage() {
     const controller = new AbortController()
 
     async function loadMovies() {
+      loadMoreController.current?.abort()
+      setIsLoadingMore(false)
       setIsLoading(true)
       setError('')
 
       try {
-        const movieResults = await discoverMovies(
+        const response = await discoverMovies(
           selectedGenreIds,
+          1,
           controller.signal,
         )
-        setMovies(movieResults)
+        setMovies(response.results)
+        setCurrentPage(response.page)
+        setTotalPages(response.total_pages)
       } catch (requestError) {
         if (!isCanceledRequest(requestError)) {
           setError(getApiErrorMessage(requestError))
@@ -64,8 +74,50 @@ function MovieGalleryPage() {
 
     void loadMovies()
 
-    return () => controller.abort()
+    return () => {
+      controller.abort()
+      loadMoreController.current?.abort()
+    }
   }, [selectedGenreIds])
+
+  async function loadMoreMovies() {
+    if (isLoadingMore || currentPage >= totalPages) {
+      return
+    }
+
+    const controller = new AbortController()
+    loadMoreController.current = controller
+    const nextPage = currentPage + 1
+
+    setIsLoadingMore(true)
+    setError('')
+
+    try {
+      const response = await discoverMovies(
+        selectedGenreIds,
+        nextPage,
+        controller.signal,
+      )
+
+      if (controller.signal.aborted) {
+        return
+      }
+
+      setMovies((currentMovies) =>
+        appendUniqueMovies(currentMovies, response.results),
+      )
+      setCurrentPage(response.page)
+      setTotalPages(response.total_pages)
+    } catch (requestError) {
+      if (!isCanceledRequest(requestError)) {
+        setError(getApiErrorMessage(requestError))
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        setIsLoadingMore(false)
+      }
+    }
+  }
 
   useEffect(() => {
     if (movies.length > 0) {
@@ -153,16 +205,30 @@ function MovieGalleryPage() {
         </div>
       )}
 
-      {!isLoading && !error && movies.length > 0 && (
-        <div className="grid grid-cols-4 gap-6">
-          {movies.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} />
-          ))}
-        </div>
+      {!isLoading && movies.length > 0 && (
+        <>
+          <div className="grid grid-cols-4 gap-6">
+            {movies.map((movie) => (
+              <MovieCard key={movie.id} movie={movie} />
+            ))}
+          </div>
+
+          {currentPage < totalPages && (
+            <div className="mt-8 flex justify-center">
+              <button
+                className="min-w-40 rounded-md bg-amber-400 px-6 py-3 text-sm font-bold text-zinc-950 transition-colors hover:bg-amber-300 disabled:cursor-wait disabled:bg-amber-400/60"
+                disabled={isLoadingMore}
+                onClick={() => void loadMoreMovies()}
+                type="button"
+              >
+                {isLoadingMore ? 'Loading more…' : 'Load more'}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   )
 }
 
 export default MovieGalleryPage
-

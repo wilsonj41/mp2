@@ -8,10 +8,17 @@ import {
 import ErrorMessage from '../components/ErrorMessage'
 import MovieListItem from '../components/MovieListItem'
 import type { MovieSummary } from '../types/tmdb'
+import { appendUniqueMovies } from '../utils/movies'
 import { saveMovieNavigation } from '../utils/movieNavigation'
 
 type SortField = 'title' | 'release_date' | 'vote_average' | 'popularity'
 type SortDirection = 'asc' | 'desc'
+
+interface CachedMovieResults {
+  movies: MovieSummary[]
+  currentPage: number
+  totalPages: number
+}
 
 function SelectChevron() {
   return (
@@ -54,8 +61,12 @@ function MovieListPage() {
   const [sortField, setSortField] = useState<SortField>('popularity')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [error, setError] = useState('')
-  const movieCache = useRef(new Map<string, MovieSummary[]>())
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const movieCache = useRef(new Map<string, CachedMovieResults>())
+  const loadMoreController = useRef<AbortController | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -63,11 +74,15 @@ function MovieListPage() {
     const cacheKey = trimmedQuery.toLocaleLowerCase()
 
     async function loadMovies() {
+      loadMoreController.current?.abort()
+      setIsLoadingMore(false)
       setError('')
 
-      const cachedMovies = movieCache.current.get(cacheKey)
-      if (cachedMovies) {
-        setMovies(cachedMovies)
+      const cachedResults = movieCache.current.get(cacheKey)
+      if (cachedResults) {
+        setMovies(cachedResults.movies)
+        setCurrentPage(cachedResults.currentPage)
+        setTotalPages(cachedResults.totalPages)
         setIsLoading(false)
         return
       }
@@ -75,12 +90,20 @@ function MovieListPage() {
       setIsLoading(true)
 
       try {
-        const results = trimmedQuery
-          ? await searchMovies(trimmedQuery, controller.signal)
-          : await getPopularMovies(controller.signal)
+        const response = trimmedQuery
+          ? await searchMovies(trimmedQuery, 1, controller.signal)
+          : await getPopularMovies(1, controller.signal)
 
-        movieCache.current.set(cacheKey, results)
-        setMovies(results)
+        const firstPageResults: CachedMovieResults = {
+          movies: response.results,
+          currentPage: response.page,
+          totalPages: response.total_pages,
+        }
+
+        movieCache.current.set(cacheKey, firstPageResults)
+        setMovies(firstPageResults.movies)
+        setCurrentPage(firstPageResults.currentPage)
+        setTotalPages(firstPageResults.totalPages)
       } catch (requestError) {
         if (!isCanceledRequest(requestError)) {
           setError(getApiErrorMessage(requestError))
@@ -97,8 +120,59 @@ function MovieListPage() {
 
     return () => {
       controller.abort()
+      loadMoreController.current?.abort()
     }
   }, [query])
+
+  async function loadMoreMovies() {
+    if (isLoadingMore || currentPage >= totalPages) {
+      return
+    }
+
+    const controller = new AbortController()
+    loadMoreController.current = controller
+    const trimmedQuery = query.trim()
+    const cacheKey = trimmedQuery.toLocaleLowerCase()
+    const nextPage = currentPage + 1
+
+    setIsLoadingMore(true)
+    setError('')
+
+    try {
+      const response = trimmedQuery
+        ? await searchMovies(trimmedQuery, nextPage, controller.signal)
+        : await getPopularMovies(nextPage, controller.signal)
+
+      if (controller.signal.aborted) {
+        return
+      }
+
+      setMovies((currentMovies) => {
+        const combinedMovies = appendUniqueMovies(
+          currentMovies,
+          response.results,
+        )
+
+        movieCache.current.set(cacheKey, {
+          movies: combinedMovies,
+          currentPage: response.page,
+          totalPages: response.total_pages,
+        })
+
+        return combinedMovies
+      })
+      setCurrentPage(response.page)
+      setTotalPages(response.total_pages)
+    } catch (requestError) {
+      if (!isCanceledRequest(requestError)) {
+        setError(getApiErrorMessage(requestError))
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        setIsLoadingMore(false)
+      }
+    }
+  }
 
   const sortedMovies = useMemo(() => {
     const directionMultiplier = sortDirection === 'asc' ? 1 : -1
@@ -217,18 +291,33 @@ function MovieListPage() {
         </div>
       )}
 
-      {!error && sortedMovies.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-white/10 bg-[#12151b]">
-          <div className="grid grid-cols-[72px_1fr_120px_110px] gap-5 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
-            <span>Poster</span>
-            <span>Movie</span>
-            <span>Released</span>
-            <span>Rating</span>
+      {sortedMovies.length > 0 && (
+        <>
+          <div className="overflow-hidden rounded-xl border border-white/10 bg-[#12151b]">
+            <div className="grid grid-cols-[72px_1fr_120px_110px] gap-5 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
+              <span>Poster</span>
+              <span>Movie</span>
+              <span>Released</span>
+              <span>Rating</span>
+            </div>
+            {sortedMovies.map((movie) => (
+              <MovieListItem key={movie.id} movie={movie} />
+            ))}
           </div>
-          {sortedMovies.map((movie) => (
-            <MovieListItem key={movie.id} movie={movie} />
-          ))}
-        </div>
+
+          {!isLoading && currentPage < totalPages && (
+            <div className="mt-8 flex justify-center">
+              <button
+                className="min-w-40 rounded-md bg-amber-400 px-6 py-3 text-sm font-bold text-zinc-950 transition-colors hover:bg-amber-300 disabled:cursor-wait disabled:bg-amber-400/60"
+                disabled={isLoadingMore}
+                onClick={() => void loadMoreMovies()}
+                type="button"
+              >
+                {isLoadingMore ? 'Loading more…' : 'Load more'}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   )
