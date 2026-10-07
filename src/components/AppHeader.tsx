@@ -14,9 +14,9 @@ function AppHeader() {
       <div className="mx-auto flex w-[1120px] items-center justify-between">
         <Link className="flex items-center gap-3 text-white" to="/">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-400 text-lg font-black text-zinc-950">
-            R
+            M
           </span>
-          <span className="text-lg font-bold tracking-tight">Reel Archive</span>
+          <span className="text-lg font-bold tracking-tight">Movie Archive</span>
         </Link>
 
         <nav aria-label="Primary navigation" className="flex items-center gap-8">
