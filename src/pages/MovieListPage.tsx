@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   getApiErrorMessage,
   getPopularMovies,
@@ -56,38 +56,48 @@ function MovieListPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const movieCache = useRef(new Map<string, MovieSummary[]>())
 
   useEffect(() => {
     const controller = new AbortController()
     const trimmedQuery = query.trim()
+    const cacheKey = trimmedQuery.toLocaleLowerCase()
 
-    const timer = window.setTimeout(
-      async () => {
-        setIsLoading(true)
-        setError('')
+    async function loadMovies() {
+      setError('')
 
-        try {
-          const results = trimmedQuery
-            ? await searchMovies(trimmedQuery, controller.signal)
-            : await getPopularMovies(controller.signal)
+      const cachedMovies = movieCache.current.get(cacheKey)
+      if (cachedMovies) {
+        setMovies(cachedMovies)
+        setIsLoading(false)
+        return
+      }
 
-          setMovies(results)
-        } catch (requestError) {
-          if (!isCanceledRequest(requestError)) {
-            setError(getApiErrorMessage(requestError))
-            setMovies([])
-          }
-        } finally {
-          if (!controller.signal.aborted) {
-            setIsLoading(false)
-          }
+      setMovies([])
+      setIsLoading(true)
+
+      try {
+        const results = trimmedQuery
+          ? await searchMovies(trimmedQuery, controller.signal)
+          : await getPopularMovies(controller.signal)
+
+        movieCache.current.set(cacheKey, results)
+        setMovies(results)
+      } catch (requestError) {
+        if (!isCanceledRequest(requestError)) {
+          setError(getApiErrorMessage(requestError))
+          setMovies([])
         }
-      },
-      trimmedQuery ? 350 : 0,
-    )
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false)
+        }
+      }
+    }
+
+    void loadMovies()
 
     return () => {
-      window.clearTimeout(timer)
       controller.abort()
     }
   }, [query])
@@ -190,7 +200,15 @@ function MovieListPage() {
       </div>
 
       {error && <ErrorMessage message={error} />}
-      {isLoading && <LoadingState message="Loading the movie list…" />}
+      {isLoading && (
+        <LoadingState
+          message={
+            query.trim()
+              ? `Searching for “${query.trim()}”…`
+              : 'Loading the movie list…'
+          }
+        />
+      )}
 
       {!isLoading && !error && sortedMovies.length === 0 && (
         <div className="rounded-xl border border-dashed border-white/15 py-20 text-center">
