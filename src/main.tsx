@@ -9,7 +9,7 @@ import NotFoundPage from './pages/NotFoundPage'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <HashRouter basename={import.meta.env.BASE_URL}>
+    <HashRouter>
       <Routes>
         <Route path='/' element={<AppSkeleton />}>
           <Route index element={<MovieListPage />} />
