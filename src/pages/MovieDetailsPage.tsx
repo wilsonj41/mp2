@@ -143,7 +143,7 @@ function MovieDetailsPage() {
 
   return (
     <article>
-      <div className="relative h-[360px] overflow-hidden border-b border-white/10 bg-zinc-900">
+      <div className="relative h-[360px] overflow-hidden bg-zinc-900">
         {backdropUrl && (
           <img
             alt=""
@@ -172,32 +172,38 @@ function MovieDetailsPage() {
             <p className="mt-3 text-lg italic text-zinc-400">“{movie.tagline}”</p>
           )}
 
-          <div className="mt-6 flex items-center gap-5 text-sm text-zinc-300">
-            <span>{formatDate(movie.release_date)}</span>
-            <span aria-hidden="true" className="text-zinc-700">
-              •
-            </span>
-            <span>{formatRuntime(movie.runtime)}</span>
-            <span aria-hidden="true" className="text-zinc-700">
-              •
-            </span>
-            <span className="font-semibold text-amber-300">
-              ★ {movie.vote_average.toFixed(1)}
-            </span>
-            <span className="text-zinc-500">
-              ({movie.vote_count.toLocaleString()} votes)
-            </span>
-          </div>
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            {movie.genres.map((genre) => (
+          <div className="mt-6 space-y-4">
+            <div className="flex items-center gap-3 text-sm text-zinc-300">
+              <span>{formatDate(movie.release_date)}</span>
               <span
-                className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-zinc-300"
-                key={genre.id}
-              >
-                {genre.name}
+                aria-hidden="true"
+                className="h-1 w-1 rounded-full bg-zinc-600"
+              />
+              <span>{formatRuntime(movie.runtime)}</span>
+              <span
+                aria-hidden="true"
+                className="h-1 w-1 rounded-full bg-zinc-600"
+              />
+              <span className="inline-flex items-baseline gap-2">
+                <span className="font-semibold text-amber-300">
+                  ★ {movie.vote_average.toFixed(1)}
+                </span>
+                <span className="text-zinc-500">
+                  ({movie.vote_count.toLocaleString()} votes)
+                </span>
               </span>
-            ))}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {movie.genres.map((genre) => (
+                <span
+                  className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-zinc-300"
+                  key={genre.id}
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
           </div>
 
           <section className="mt-9">

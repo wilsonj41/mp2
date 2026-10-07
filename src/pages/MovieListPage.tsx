@@ -14,6 +14,25 @@ import { saveMovieNavigation } from '../utils/movieNavigation'
 type SortField = 'title' | 'release_date' | 'vote_average' | 'popularity'
 type SortDirection = 'asc' | 'desc'
 
+function SelectChevron() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-300"
+      fill="none"
+      viewBox="0 0 20 20"
+    >
+      <path
+        d="m6 8 4 4 4-4"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </svg>
+  )
+}
+
 function compareMovies(
   firstMovie: MovieSummary,
   secondMovie: MovieSummary,
@@ -133,32 +152,40 @@ function MovieListPage() {
           <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-400">
             Sort by
           </span>
-          <select
-            className="h-11 w-full rounded-md border border-white/10 bg-[#0d0f14] px-3 text-sm text-white outline-none focus:border-amber-400"
-            onChange={(event) => setSortField(event.target.value as SortField)}
-            value={sortField}
-          >
-            <option value="title">Title</option>
-            <option value="release_date">Release date</option>
-            <option value="vote_average">Rating</option>
-            <option value="popularity">Popularity</option>
-          </select>
+          <div className="relative">
+            <select
+              className="h-11 w-full appearance-none rounded-md border border-white/10 bg-[#0d0f14] px-3 pr-10 text-sm text-white outline-none focus:border-amber-400"
+              onChange={(event) =>
+                setSortField(event.target.value as SortField)
+              }
+              value={sortField}
+            >
+              <option value="title">Title</option>
+              <option value="release_date">Release date</option>
+              <option value="vote_average">Rating</option>
+              <option value="popularity">Popularity</option>
+            </select>
+            <SelectChevron />
+          </div>
         </label>
 
         <label className="block">
           <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-400">
             Order
           </span>
-          <select
-            className="h-11 w-full rounded-md border border-white/10 bg-[#0d0f14] px-3 text-sm text-white outline-none focus:border-amber-400"
-            onChange={(event) =>
-              setSortDirection(event.target.value as SortDirection)
-            }
-            value={sortDirection}
-          >
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-          </select>
+          <div className="relative">
+            <select
+              className="h-11 w-full appearance-none rounded-md border border-white/10 bg-[#0d0f14] px-3 pr-10 text-sm text-white outline-none focus:border-amber-400"
+              onChange={(event) =>
+                setSortDirection(event.target.value as SortDirection)
+              }
+              value={sortDirection}
+            >
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+            <SelectChevron />
+          </div>
         </label>
       </div>
 
@@ -192,4 +219,3 @@ function MovieListPage() {
 }
 
 export default MovieListPage
-
