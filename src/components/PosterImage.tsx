@@ -14,10 +14,10 @@ function PosterImage({ alt, className, src }: PosterImageProps) {
     return (
       <div
         aria-label={`${alt} poster unavailable`}
-        className={`${className} flex items-center justify-center bg-zinc-800 px-5 text-center text-sm text-zinc-500`}
+        className={`${className} flex items-center justify-center overflow-hidden bg-zinc-800 px-1 text-center text-[10px] leading-tight text-zinc-500`}
         role="img"
       >
-        Poster unavailable
+        No poster
       </div>
     )
   }
