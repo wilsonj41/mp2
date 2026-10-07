@@ -6,7 +6,6 @@ import {
   searchMovies,
 } from '../api/tmdb'
 import ErrorMessage from '../components/ErrorMessage'
-import LoadingState from '../components/LoadingState'
 import MovieListItem from '../components/MovieListItem'
 import type { MovieSummary } from '../types/tmdb'
 import { saveMovieNavigation } from '../utils/movieNavigation'
@@ -73,7 +72,6 @@ function MovieListPage() {
         return
       }
 
-      setMovies([])
       setIsLoading(true)
 
       try {
@@ -149,13 +147,22 @@ function MovieListPage() {
           <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-zinc-400">
             Search by title
           </span>
-          <input
-            className="h-11 w-full rounded-md border border-white/10 bg-[#0d0f14] px-4 text-sm text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-amber-400"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Try The Godfather…"
-            type="search"
-            value={query}
-          />
+          <div className="relative">
+            <input
+              className="h-11 w-full rounded-md border border-white/10 bg-[#0d0f14] px-4 pr-12 text-sm text-white outline-none transition-colors placeholder:text-zinc-600 focus:border-amber-400"
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Try The Godfather…"
+              type="search"
+              value={query}
+            />
+            {isLoading && (
+              <span
+                aria-label="Updating movie results"
+                className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin rounded-full border-2 border-zinc-600 border-t-amber-400"
+                role="status"
+              />
+            )}
+          </div>
         </label>
 
         <label className="block">
@@ -200,15 +207,6 @@ function MovieListPage() {
       </div>
 
       {error && <ErrorMessage message={error} />}
-      {isLoading && (
-        <LoadingState
-          message={
-            query.trim()
-              ? `Searching for “${query.trim()}”…`
-              : 'Loading the movie list…'
-          }
-        />
-      )}
 
       {!isLoading && !error && sortedMovies.length === 0 && (
         <div className="rounded-xl border border-dashed border-white/15 py-20 text-center">
@@ -219,7 +217,7 @@ function MovieListPage() {
         </div>
       )}
 
-      {!isLoading && !error && sortedMovies.length > 0 && (
+      {!error && sortedMovies.length > 0 && (
         <div className="overflow-hidden rounded-xl border border-white/10 bg-[#12151b]">
           <div className="grid grid-cols-[72px_1fr_120px_110px] gap-5 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-bold uppercase tracking-wider text-zinc-500">
             <span>Poster</span>
